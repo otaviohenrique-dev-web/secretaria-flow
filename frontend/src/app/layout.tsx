@@ -3,12 +3,14 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
+
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Secretaria Flow',
-  description: 'Gestão de classes da Escola Sabatina',
-  referrer: 'no-referrer-when-downgrade', 
+  title: "Secretaria Flow | Gestão Inteligente",
+  description: "Plataforma premium para gestão de chamadas, métricas dinâmicas e relatórios da Escola Sabatina.",
+  applicationName: "Secretaria Flow",
+  themeColor: "#4f46e5", 
 };
 
 export default function RootLayout({
