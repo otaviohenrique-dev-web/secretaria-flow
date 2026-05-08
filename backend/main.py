@@ -208,3 +208,49 @@ def toggle_pergunta(pergunta_id: int, session: Session = Depends(get_session), c
     session.add(pergunta)
     session.commit()
     return {"message": "Status atualizado", "ativa": pergunta.ativa}
+
+# --- ROTAS DE GERENCIAMENTO DE ALUNOS E CLASSES ---
+
+@app.get("/api/classes")
+def listar_classes(session: Session = Depends(get_session), current_user: dict = Depends(get_current_user)):
+    """Retorna todas as classes para popular os selects."""
+    return session.exec(select(Classe)).all()
+
+@app.get("/api/admin/alunos")
+def listar_todos_alunos(session: Session = Depends(get_session), current_user: dict = Depends(get_current_user)):
+    """Lista todos os alunos de todas as classes para o painel de gestão."""
+    return session.exec(select(Aluno)).all()
+
+@app.post("/api/alunos")
+def criar_aluno(aluno: Aluno, session: Session = Depends(get_session), current_user: dict = Depends(get_current_user)):
+    """Adiciona um novo aluno."""
+    session.add(aluno)
+    session.commit()
+    session.refresh(aluno)
+    return aluno
+
+@app.put("/api/alunos/{aluno_id}")
+def atualizar_aluno(aluno_id: int, dados_atualizados: Aluno, session: Session = Depends(get_session), current_user: dict = Depends(get_current_user)):
+    """Edita os dados de um aluno (Nome ou Classe)."""
+    aluno_db = session.get(Aluno, aluno_id)
+    if not aluno_db:
+        raise HTTPException(status_code=404, detail="Aluno não encontrado")
+    
+    aluno_db.nome = dados_atualizados.nome
+    aluno_db.classe_id = dados_atualizados.classe_id
+    
+    session.add(aluno_db)
+    session.commit()
+    session.refresh(aluno_db)
+    return aluno_db
+
+@app.delete("/api/alunos/{aluno_id}")
+def deletar_aluno(aluno_id: int, session: Session = Depends(get_session), current_user: dict = Depends(get_current_user)):
+    """Remove um aluno permanentemente."""
+    aluno_db = session.get(Aluno, aluno_id)
+    if not aluno_db:
+        raise HTTPException(status_code=404, detail="Aluno não encontrado")
+    
+    session.delete(aluno_db)
+    session.commit()
+    return {"message": "Aluno removido com sucesso"}

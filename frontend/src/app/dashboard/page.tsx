@@ -99,53 +99,102 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-3">
-            
-            {/* Seletor Dinâmico de Classes */}
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
-                <Users className="w-4 h-4" />
-              </div>
-              <select 
-                value={classeAtiva}
-                onChange={(e) => setClasseAtiva(e.target.value)}
-                className="pl-10 pr-10 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-200 appearance-none focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm cursor-pointer"
-              >
-                {classes.length === 0 ? (
-                  <option>Carregando classes...</option>
-                ) : (
-                  classes.map((cls) => (
-                    <option key={cls.id} value={cls.nome}>{cls.nome}</option>
-                  ))
-                )}
-              </select>
-              <ChevronDown className="absolute inset-y-0 right-3 flex items-center my-auto w-4 h-4 text-slate-400 pointer-events-none" />
-            </div>
 
-            <div className="relative">
-              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
-                <Calendar className="w-4 h-4" />
-              </div>
-              <input 
-                type="date"
-                value={dataSelecionada}
-                onChange={(e) => setDataSelecionada(e.target.value)}
-                className="pl-10 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm"
-              />
-            </div>
 
-            {/* Botão para Gerenciar as Perguntas/Métricas */}
-<a href="/dashboard/perguntas" className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-6 py-3 rounded-2xl transition-all shadow-lg shadow-indigo-500/25 hover:-translate-y-0.5">
-  <Settings className="w-4 h-4" />
-  Métricas
-</a>
 
-{/* Botão para os Relatórios (se você ainda não tiver colocado) */}
-<a href="/dashboard/relatorios" className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-6 py-3 rounded-2xl transition-all shadow-lg shadow-emerald-500/25 hover:-translate-y-0.5">
-  <TrendingUp className="w-4 h-4" />
-  Relatório
-</a>
-          </div>
+
+
+
+
+
+
+
+
+
+
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-4 w-full">
+  
+  {/* SEÇÃO ESQUERDA: Filtros (Classe e Data) */}
+  <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+    
+    {/* Seletor Dinâmico de Classes */}
+    <div className="relative group w-full sm:w-auto">
+      <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400 group-hover:text-indigo-500 transition-colors">
+        <Users className="w-4 h-4" />
+      </div>
+      <select 
+        value={classeAtiva}
+        onChange={(e) => setClasseAtiva(e.target.value)}
+        className="w-full sm:w-auto pl-10 pr-10 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-200 appearance-none focus:ring-2 focus:ring-indigo-500 hover:border-indigo-200 dark:hover:border-indigo-800 transition-all shadow-sm cursor-pointer"
+      >
+        {classes.length === 0 ? (
+          <option>Carregando classes...</option>
+        ) : (
+          classes.map((cls) => (
+            <option key={cls.id} value={cls.nome}>{cls.nome}</option>
+          ))
+        )}
+      </select>
+      <ChevronDown className="absolute inset-y-0 right-3 flex items-center my-auto w-4 h-4 text-slate-400 pointer-events-none" />
+    </div>
+
+    {/* Seletor de Data */}
+    <div className="relative w-full sm:w-auto">
+      <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400">
+        <Calendar className="w-4 h-4" />
+      </div>
+      <input 
+        type="date"
+        value={dataSelecionada}
+        onChange={(e) => setDataSelecionada(e.target.value)}
+        className="w-full sm:w-auto pl-10 pr-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500 hover:border-indigo-200 dark:hover:border-indigo-800 transition-all shadow-sm color-scheme-light dark:color-scheme-dark"
+      />
+    </div>
+
+  </div>
+
+  {/* SEÇÃO DIREITA: Botões de Ação */}
+  <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+    
+    {/* NOVO: Botão de Gestão de Alunos */}
+    <a href="/dashboard/alunos" className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm px-6 py-3 rounded-2xl transition-all shadow-lg shadow-blue-500/25 hover:-translate-y-0.5 w-full sm:w-auto">
+      <Users className="w-4 h-4" />
+      Alunos
+    </a>
+
+    {/* Botão para Gerenciar as Perguntas/Métricas */}
+    <a href="/dashboard/perguntas" className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-6 py-3 rounded-2xl transition-all shadow-lg shadow-indigo-500/25 hover:-translate-y-0.5 w-full sm:w-auto">
+      <Settings className="w-4 h-4" />
+      Métricas
+    </a>
+
+    {/* Botão para os Relatórios */}
+    <a href="/dashboard/relatorios" className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-6 py-3 rounded-2xl transition-all shadow-lg shadow-emerald-500/25 hover:-translate-y-0.5 w-full sm:w-auto">
+      <TrendingUp className="w-4 h-4" />
+      Relatório
+    </a>
+
+  </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         </div>
         
         {/* Passamos as variáveis de estado para a tabela buscar os dados filtrados */}
