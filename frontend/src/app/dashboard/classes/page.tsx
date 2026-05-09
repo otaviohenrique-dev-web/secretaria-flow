@@ -31,6 +31,14 @@ export default function GerenciadorClasses() {
     if (!token) return;
     try {
       const res = await fetch(`${apiUrl}/api/classes`, { headers: { Authorization: `Bearer ${token}` } });
+      
+      // 🚨 Proteção de Token Expirado
+      if (res.status === 401) {
+        Cookies.remove('auth_token');
+        window.location.href = "/";
+        return;
+      }
+
       if (res.ok) setClasses(await res.json());
     } catch (error) {
       console.error(error);
@@ -53,6 +61,14 @@ export default function GerenciadorClasses() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ nome, professor, associado })
       });
+
+      // 🚨 Proteção de Token Expirado
+      if (res.status === 401) {
+        Cookies.remove('auth_token');
+        window.location.href = "/";
+        return;
+      }
+
       if (res.ok) {
         setNome(''); setProfessor(''); setAssociado(''); setEditandoId(null);
         fetchDados();
@@ -72,6 +88,14 @@ export default function GerenciadorClasses() {
     if (!token) return;
     try {
       const res = await fetch(`${apiUrl}/api/classes/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      
+      // 🚨 Proteção de Token Expirado
+      if (res.status === 401) {
+        Cookies.remove('auth_token');
+        window.location.href = "/";
+        return;
+      }
+
       if (res.ok) fetchDados();
     } catch (error) { alert("Erro ao excluir."); }
   };

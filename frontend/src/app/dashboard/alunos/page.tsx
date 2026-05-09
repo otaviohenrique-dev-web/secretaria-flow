@@ -44,6 +44,14 @@ export default function GerenciadorAlunos() {
         fetch(`${apiUrl}/api/classes`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
 
+      // 🚨 VERIFICAÇÃO DE TOKEN EXPIRADO 🚨
+      if (resAlunos.status === 401 || resClasses.status === 401) {
+        console.warn("⚠️ Token expirado. Redirecionando para login...");
+        Cookies.remove('auth_token');
+        window.location.href = "/";
+        return;
+      }
+
       if (resAlunos.ok && resClasses.ok) {
         setAlunos(await resAlunos.json());
         setClasses(await resClasses.json());
@@ -72,6 +80,13 @@ export default function GerenciadorAlunos() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ nome, classe_id: Number(classeId) })
       });
+
+      // 🚨 VERIFICAÇÃO  🚨
+      if (res.status === 401) {
+        Cookies.remove('auth_token');
+        window.location.href = "/";
+        return;
+      }
 
       if (res.ok) {
         setNome('');
@@ -112,6 +127,14 @@ export default function GerenciadorAlunos() {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
+
+      // 🚨 VERIFICAÇÃO 🚨
+      if (res.status === 401) {
+        Cookies.remove('auth_token');
+        window.location.href = "/";
+        return;
+      }
+
       if (res.ok) fetchDados();
     } catch (error) {
       alert("Erro ao excluir.");

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import AttendanceTable from '@/components/chamada/AttendanceTable';
 import Footer from '@/components/Footer';
 import ThemeToggle from '@/components/ThemeToggle';
-import { LayoutDashboard, Settings, User, Calendar, Users, ChevronDown, TrendingUp, BookOpen } from 'lucide-react';
+import { LayoutDashboard, Settings, LogOut, Calendar, Users, ChevronDown, TrendingUp, BookOpen } from 'lucide-react';
 import Cookies from 'js-cookie';
 
 // Definimos o tipo atualizado da Classe
@@ -14,42 +14,52 @@ export default function Dashboard() {
   const [classeAtiva, setClasseAtiva] = useState('Adultos - Classe 1');
   const [dataSelecionada, setDataSelecionada] = useState(new Date().toISOString().split('T')[0]); 
 
+  // Função para fazer logout manual
+  const handleLogout = () => {
+    if (window.confirm("Deseja realmente sair do sistema?")) {
+      Cookies.remove('auth_token');
+      window.location.href = "/";
+    }
+  };
+
   // Busca as classes do Back-end ao carregar a página
   useEffect(() => {
     const fetchClasses = async () => {
       const token = Cookies.get('auth_token');
-      console.log("🔍 Passo 1: Lendo o Token do Cookie ->", token ? "Token Encontrado!" : "Ausente :(");
 
+      // 🚨 Proteção extra no cliente (Sem token)
       if (!token) {
-        console.warn("⚠️ Busca cancelada: Usuário sem token no cookie.");
-        setClasses([{ id: 0, nome: "Erro: Faça login novamente", professor: "", associado: "" }]); // Feedback visual na tela
+        window.location.href = "/";
         return;
       }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      console.log("🌐 Passo 2: URL da API ->", apiUrl);
 
       try {
         const res = await fetch(`${apiUrl}/api/classes`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
-        console.log("📡 Passo 3: Status da Resposta do Back-end ->", res.status);
+        // 🚨 SE O TOKEN EXPIROU (Erro 401 do FastAPI)
+        if (res.status === 401) {
+          console.warn("⚠️ Token expirado. Redirecionando para login...");
+          Cookies.remove('auth_token'); // Limpa o token morto
+          window.location.href = "/"; // Expulsa pro login
+          return;
+        }
 
         if (res.ok) {
           const data = await res.json();
-          console.log("✅ Passo 4: Classes recebidas com sucesso ->", data);
           setClasses(data);
           if (data.length > 0) {
             setClasseAtiva(data[0].nome);
           }
         } else {
-          const erroText = await res.text();
-          console.error("❌ Erro retornado pela API:", erroText);
-          setClasses([{ id: 0, nome: "Erro de permissão", professor: "", associado: "" }]);
+          // Outros erros (ex: 500)
+          setClasses([{ id: 0, nome: "Erro ao carregar dados", professor: "", associado: "" }]);
         }
       } catch (error) {
-        console.error("💥 Erro fatal ao tentar conectar com o Back-end:", error);
+        console.error("Erro fatal:", error);
         setClasses([{ id: 0, nome: "Servidor offline", professor: "", associado: "" }]);
       }
     };
@@ -81,8 +91,13 @@ export default function Dashboard() {
             <div className="flex items-center gap-3">
               <ThemeToggle />
               <div className="h-8 w-px bg-slate-200 dark:bg-slate-800 mx-2" />
-              <button className="text-slate-500 dark:text-slate-400 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
-                <User className="w-5 h-5" />
+              {/* Botão de Sair / Logout */}
+              <button 
+                onClick={handleLogout}
+                title="Sair do Sistema"
+                className="text-slate-500 dark:text-slate-400 p-2 rounded-full hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-500 transition-colors"
+              >
+                <LogOut className="w-5 h-5" />
               </button>
             </div>
           </div>

@@ -20,7 +20,6 @@ export default function GerenciadorPerguntas() {
   const getToken = () => {
     const token = Cookies.get('auth_token');
     if (!token) {
-      alert("Sua sessão expirou. Por favor, faça login novamente.");
       window.location.href = "/"; 
       return null;
     }
@@ -39,6 +38,14 @@ export default function GerenciadorPerguntas() {
       const res = await fetch(`${apiUrl}/api/admin/perguntas`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+
+      // 🚨 Proteção de Token Expirado
+      if (res.status === 401) {
+        Cookies.remove('auth_token');
+        window.location.href = "/";
+        return;
+      }
+
       if (res.ok) {
         setPerguntas(await res.json());
       } else {
@@ -67,6 +74,13 @@ export default function GerenciadorPerguntas() {
         body: JSON.stringify({ texto: novoTexto, tipo: novoTipo, escopo: novoEscopo, ativa: true })
       });
 
+      // 🚨 Proteção de Token Expirado
+      if (res.status === 401) {
+        Cookies.remove('auth_token');
+        window.location.href = "/";
+        return;
+      }
+
       if (res.ok) {
         setNovoTexto('');
         fetchPerguntas(); 
@@ -89,6 +103,14 @@ export default function GerenciadorPerguntas() {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` }
       });
+
+      // 🚨 Proteção de Token Expirado
+      if (res.status === 401) {
+        Cookies.remove('auth_token');
+        window.location.href = "/";
+        return;
+      }
+
       if (res.ok) {
         fetchPerguntas(); 
       }

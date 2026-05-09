@@ -29,12 +29,27 @@ export default function RelatorioTrimestral() {
   useEffect(() => {
     const fetchRelatorio = async () => {
       const token = Cookies.get('auth_token');
+      
+      // 🚨 Proteção no cliente (Sem token)
+      if (!token) {
+        window.location.href = "/";
+        return;
+      }
+
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
       try {
         const res = await fetch(`${apiUrl}/api/relatorios/trimestre`, {
           headers: { Authorization: `Bearer ${token}` }
         });
+
+        // 🚨 Proteção pela API (Token expirado)
+        if (res.status === 401) {
+          Cookies.remove('auth_token');
+          window.location.href = "/";
+          return;
+        }
+
         if (res.ok) {
           const json = await res.json();
           setDados(json);
@@ -67,6 +82,13 @@ export default function RelatorioTrimestral() {
 
     setLoading(true); // Mostra o spinner de carregamento
     const token = Cookies.get('auth_token');
+    
+    // 🚨 Proteção no cliente (Sem token)
+    if (!token) {
+      window.location.href = "/";
+      return;
+    }
+
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
     try {
@@ -74,6 +96,13 @@ export default function RelatorioTrimestral() {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
+
+      // 🚨 Proteção pela API (Token expirado)
+      if (res.status === 401) {
+        Cookies.remove('auth_token');
+        window.location.href = "/";
+        return;
+      }
 
       if (res.ok) {
         alert("✨ Trimestre encerrado! O sistema está limpo para o próximo ciclo.");
