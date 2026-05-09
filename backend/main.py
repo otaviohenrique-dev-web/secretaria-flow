@@ -297,6 +297,28 @@ def deletar_classe(classe_id: int, session: Session = Depends(get_session), curr
 # --- FIM ROTAS DE CRUD DE CLASSES ---
 
 
+# --- ROTA PARA ENCERRAR O TRIMESTRE ---
+@app.delete("/api/relatorios/resetar")
+def resetar_trimestre(session: Session = Depends(get_session), current_user: dict = Depends(get_current_user)):
+    """Apaga TODOS os registros de chamadas para iniciar um novo trimestre, mantendo alunos e classes."""
+    
+    try:
+        # ATENÇÃO: Substitua "Chamada" pelo nome exato do seu modelo de banco de dados
+        # que guarda os registros diários (ex: Chamada, Resposta, RegistroPresenca).
+        # Vamos assumir que o modelo se chame `Chamada`.
+        from models import Chamada 
+        
+        chamadas_antigas = session.exec(select(Chamada)).all()
+        for c in chamadas_antigas:
+            session.delete(c)
+            
+        session.commit()
+        return {"message": "Trimestre encerrado e métricas zeradas com sucesso!"}
+    
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=500, detail=f"Erro ao zerar trimestre: {str(e)}")
+# --- FIM ROTA PARA ENCERRAR O TRIMESTRE ---
 
 
 

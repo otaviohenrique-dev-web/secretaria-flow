@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Footer from '@/components/Footer';
 import ThemeToggle from '@/components/ThemeToggle';
-import { LayoutDashboard, BookOpen, TrendingUp, ChevronLeft, CalendarDays, Hash, Loader2 } from 'lucide-react';
+import { LayoutDashboard, BookOpen, TrendingUp, ChevronLeft, CalendarDays, Hash, Loader2, AlertTriangle, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import Cookies from 'js-cookie';
 
@@ -52,6 +52,40 @@ export default function RelatorioTrimestral() {
   const calcPct = (sim: number, total: number) => {
     if (total === 0) return 0;
     return Math.round((sim / total) * 100);
+  };
+
+  const handleZerarTrimestre = async () => {
+    // PROTEÇÃO CONTRA CLIQUE ACIDENTAL
+    const confirmacao = window.prompt(
+      "⚠️ ATENÇÃO: Você está prestes a ENCERRAR O TRIMESTRE.\n\nIsso apagará todas as métricas, presenças e registros deste trimestre. Classes e Alunos serão mantidos.\n\nPara confirmar, digite a palavra: ZERAR"
+    );
+
+    if (confirmacao !== "ZERAR") {
+      alert("Operação cancelada. Os dados foram mantidos de forma segura.");
+      return;
+    }
+
+    setLoading(true); // Mostra o spinner de carregamento
+    const token = Cookies.get('auth_token');
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+    try {
+      const res = await fetch(`${apiUrl}/api/relatorios/resetar`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        alert("✨ Trimestre encerrado! O sistema está limpo para o próximo ciclo.");
+        window.location.reload(); // Recarrega a página para zerar os números da tela
+      } else {
+        alert("❌ Erro ao zerar o trimestre no servidor.");
+        setLoading(false);
+      }
+    } catch (error) {
+      alert("❌ Erro de conexão.");
+      setLoading(false);
+    }
   };
 
   if (loading) {
@@ -107,6 +141,16 @@ export default function RelatorioTrimestral() {
               <span>{dados.trimestre} de {dados.ano}</span>
             </div>
           </div>
+
+          {/* BOTÃO PROTEGIDO DE ENCERRAR TRIMESTRE */}
+          <button 
+            onClick={handleZerarTrimestre}
+            className="flex items-center justify-center gap-2 bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-sm px-6 py-3 rounded-2xl transition-all border border-rose-200 dark:border-rose-500/30 w-full md:w-auto"
+          >
+            <AlertTriangle className="w-4 h-4" />
+            <span className="hidden sm:inline">Encerrar Trimestre</span>
+            <span className="sm:hidden">Zerar Relatórios</span>
+          </button>
         </div>
 
         {/* KPIs GLOBAIS DINÂMICOS */}
