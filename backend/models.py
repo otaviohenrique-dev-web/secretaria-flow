@@ -6,9 +6,10 @@ from datetime import date
 
 class Classe(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    nome: str
+    nome: str = Field(unique=True)
+    professor: str = Field(default="") # NOVO
+    associado: str = Field(default="") # NOVO
     
-    # Relacionamento bidirecional com Aluno
     alunos: List["Aluno"] = Relationship(back_populates="classe")
 
 class Aluno(SQLModel, table=True):

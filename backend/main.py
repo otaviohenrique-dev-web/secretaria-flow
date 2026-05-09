@@ -181,9 +181,10 @@ def relatorio_trimestral(session: Session = Depends(get_session), current_user: 
         relatorio["classes"].append(classe_data)
 
     return relatorio
+# --- FIM ROTAS PROTEGIDAS DA APLICAÇÃO ---
+
 
 # --- ROTAS DE GERENCIAMENTO DE PERGUNTAS ---
-
 @app.get("/api/admin/perguntas")
 def listar_todas_perguntas(session: Session = Depends(get_session), current_user: dict = Depends(get_current_user)):
     """Lista todas as perguntas para o gerenciador (ativas e inativas)."""
@@ -208,9 +209,10 @@ def toggle_pergunta(pergunta_id: int, session: Session = Depends(get_session), c
     session.add(pergunta)
     session.commit()
     return {"message": "Status atualizado", "ativa": pergunta.ativa}
+# --- FIM ROTAS DE GERENCIAMENTO DE PERGUNTAS ---
+
 
 # --- ROTAS DE GERENCIAMENTO DE ALUNOS E CLASSES ---
-
 @app.get("/api/classes")
 def listar_classes(session: Session = Depends(get_session), current_user: dict = Depends(get_current_user)):
     """Retorna todas as classes para popular os selects."""
@@ -254,3 +256,79 @@ def deletar_aluno(aluno_id: int, session: Session = Depends(get_session), curren
     session.delete(aluno_db)
     session.commit()
     return {"message": "Aluno removido com sucesso"}
+# --- FIM ROTAS DE GERENCIAMENTO DE ALUNOS E CLASSES ---
+
+
+# --- ROTAS DE CRUD DE CLASSES ---
+@app.post("/api/classes")
+def criar_classe(classe: Classe, session: Session = Depends(get_session), current_user: dict = Depends(get_current_user)):
+    """Cria uma nova classe."""
+    session.add(classe)
+    session.commit()
+    session.refresh(classe)
+    return classe
+
+@app.put("/api/classes/{classe_id}")
+def atualizar_classe(classe_id: int, dados: Classe, session: Session = Depends(get_session), current_user: dict = Depends(get_current_user)):
+    """Edita uma classe (Nome, Professor, Associado)."""
+    classe_db = session.get(Classe, classe_id)
+    if not classe_db:
+        raise HTTPException(status_code=404, detail="Classe não encontrada")
+    
+    classe_db.nome = dados.nome
+    classe_db.professor = dados.professor
+    classe_db.associado = dados.associado
+    
+    session.add(classe_db)
+    session.commit()
+    session.refresh(classe_db)
+    return classe_db
+
+@app.delete("/api/classes/{classe_id}")
+def deletar_classe(classe_id: int, session: Session = Depends(get_session), current_user: dict = Depends(get_current_user)):
+    """Deleta uma classe."""
+    classe_db = session.get(Classe, classe_id)
+    if not classe_db:
+        raise HTTPException(status_code=404, detail="Classe não encontrada")
+    
+    session.delete(classe_db)
+    session.commit()
+    return {"message": "Classe deletada"}
+# --- FIM ROTAS DE CRUD DE CLASSES ---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import AttendanceTable from '@/components/chamada/AttendanceTable';
 import Footer from '@/components/Footer';
 import ThemeToggle from '@/components/ThemeToggle';
-import { LayoutDashboard, Settings, User, Calendar, Users, ChevronDown, TrendingUp } from 'lucide-react';
+import { LayoutDashboard, Settings, User, Calendar, Users, ChevronDown, TrendingUp, BookOpen } from 'lucide-react';
 import Cookies from 'js-cookie';
 
 export default function Dashboard() {
@@ -98,20 +98,6 @@ export default function Dashboard() {
               Lance e revise os dados da Escola Sabatina com precisão.
             </p>
           </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <div className="flex flex-col lg:flex-row items-center justify-between gap-4 w-full">
   
   {/* SEÇÃO ESQUERDA: Filtros (Classe e Data) */}
@@ -154,47 +140,28 @@ export default function Dashboard() {
   </div>
 
   {/* SEÇÃO DIREITA: Botões de Ação */}
-  <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+  {/* Usamos grid-cols-2 no mobile para otimizar espaço, e flex-row no PC */}
+  <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2 sm:gap-3 w-full lg:w-auto mt-4 lg:mt-0">
     
-    {/* NOVO: Botão de Gestão de Alunos */}
-    <a href="/dashboard/alunos" className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm px-6 py-3 rounded-2xl transition-all shadow-lg shadow-blue-500/25 hover:-translate-y-0.5 w-full sm:w-auto">
-      <Users className="w-4 h-4" />
-      Alunos
+    <a href="/dashboard/classes" className="flex items-center justify-center gap-1.5 bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs sm:text-sm px-4 sm:px-6 py-3 rounded-2xl transition-all shadow-lg shadow-violet-500/25">
+      <BookOpen className="w-4 h-4" /> <span className="hidden sm:inline">Classes</span><span className="sm:hidden">Unidades</span>
     </a>
 
-    {/* Botão para Gerenciar as Perguntas/Métricas */}
-    <a href="/dashboard/perguntas" className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-6 py-3 rounded-2xl transition-all shadow-lg shadow-indigo-500/25 hover:-translate-y-0.5 w-full sm:w-auto">
-      <Settings className="w-4 h-4" />
-      Métricas
+    <a href="/dashboard/alunos" className="flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm px-4 sm:px-6 py-3 rounded-2xl transition-all shadow-lg shadow-blue-500/25">
+      <Users className="w-4 h-4" /> Alunos
     </a>
 
-    {/* Botão para os Relatórios */}
-    <a href="/dashboard/relatorios" className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-6 py-3 rounded-2xl transition-all shadow-lg shadow-emerald-500/25 hover:-translate-y-0.5 w-full sm:w-auto">
-      <TrendingUp className="w-4 h-4" />
-      Relatório
+    <a href="/dashboard/perguntas" className="flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm px-4 sm:px-6 py-3 rounded-2xl transition-all shadow-lg shadow-indigo-500/25">
+      <Settings className="w-4 h-4" /> Métricas
+    </a>
+
+    <a href="/dashboard/relatorios" className="flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm px-4 sm:px-6 py-3 rounded-2xl transition-all shadow-lg shadow-emerald-500/25">
+      <TrendingUp className="w-4 h-4" /> Relatórios
     </a>
 
   </div>
 
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         </div>
         
         {/* Passamos as variáveis de estado para a tabela buscar os dados filtrados */}
