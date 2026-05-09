@@ -86,7 +86,7 @@ export default function AttendanceTable({ classeSelecionada, dataSelecionada }: 
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 sm:p-12 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[2rem] shadow-xl h-64">
+      <div className="flex flex-col items-center justify-center p-8 sm:p-12 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-4xl shadow-xl h-64">
         <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mb-4" />
         <p className="text-slate-500 font-medium animate-pulse text-sm sm:text-base">Carregando diário de classe...</p>
       </div>
@@ -95,7 +95,7 @@ export default function AttendanceTable({ classeSelecionada, dataSelecionada }: 
 
   if (alunos.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 sm:p-12 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[2rem] shadow-xl text-center">
+      <div className="flex flex-col items-center justify-center p-8 sm:p-12 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-4xl shadow-xl text-center">
         <Users className="w-12 h-12 text-slate-300 dark:text-slate-600 mb-4" />
         <h3 className="text-lg font-bold text-slate-700 dark:text-slate-200">Nenhum aluno encontrado</h3>
         <p className="text-slate-500 text-sm sm:text-base mt-2">Esta classe ainda não possui alunos cadastrados no sistema.</p>
@@ -107,7 +107,7 @@ export default function AttendanceTable({ classeSelecionada, dataSelecionada }: 
   const perguntasClasse = perguntas.filter(p => p.escopo === 'global');
 
   return (
-    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[2rem] shadow-2xl border border-slate-200/50 dark:border-slate-800/50 overflow-hidden flex flex-col">
+    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-4xl shadow-2xl border border-slate-200/50 dark:border-slate-800/50 overflow-hidden flex flex-col">
       
       {/* Container da Tabela com Scroll Suave */}
       <div className="overflow-x-auto w-full pb-4 scrollbar-thin scrollbar-thumb-indigo-200 dark:scrollbar-thumb-indigo-800">
@@ -116,7 +116,7 @@ export default function AttendanceTable({ classeSelecionada, dataSelecionada }: 
             <tr>
               <th className="px-4 sm:px-8 py-4 sm:py-6 bg-slate-50/90 dark:bg-slate-800/90 text-slate-400 dark:text-slate-500 text-[10px] sm:text-xs uppercase font-black tracking-widest sticky left-0 z-20 backdrop-blur-md shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">Aluno</th>
               {perguntasAluno.map(p => (
-                <th key={p.id} className="px-4 sm:px-8 py-4 sm:py-6 bg-slate-50/50 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 text-[9px] sm:text-[10px] uppercase font-black tracking-widest text-center min-w-[100px] sm:min-w-[120px]">
+                <th key={p.id} className="px-4 sm:px-8 py-4 sm:py-6 bg-slate-50/50 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 text-[9px] sm:text-[10px] uppercase font-black tracking-widest text-center min-w-25 sm:min-w-30">
                   <div className="flex flex-col items-center gap-2">
                     <span className="p-1.5 sm:p-2 rounded-lg bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-700 text-indigo-500">
                       {getIconForPergunta(p.texto, p.tipo)}
@@ -137,7 +137,7 @@ export default function AttendanceTable({ classeSelecionada, dataSelecionada }: 
                     <div className={`w-8 h-8 sm:w-10 sm:h-10 shrink-0 rounded-full flex items-center justify-center text-white font-bold text-xs sm:text-sm shadow-inner ${getAvatarColor(aluno.nome)}`}>
                       {aluno.nome.charAt(0)}
                     </div>
-                    <span className="font-bold text-sm sm:text-base text-slate-700 dark:text-slate-200 tracking-tight whitespace-nowrap max-w-[120px] sm:max-w-[200px] truncate">
+                    <span className="font-bold text-sm sm:text-base text-slate-700 dark:text-slate-200 tracking-tight whitespace-nowrap max-w-30 sm:max-w-50 truncate">
                       {aluno.nome}
                     </span>
                   </div>

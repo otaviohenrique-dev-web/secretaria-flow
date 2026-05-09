@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Footer from '@/components/Footer';
 import ThemeToggle from '@/components/ThemeToggle';
-import { LayoutDashboard, Users, BookOpen, TrendingUp, ChevronLeft, CalendarDays, Hash, Loader2 } from 'lucide-react';
+import { LayoutDashboard, BookOpen, TrendingUp, ChevronLeft, CalendarDays, Hash, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import Cookies from 'js-cookie';
 
@@ -56,8 +56,9 @@ export default function RelatorioTrimestral() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
-        <Loader2 className="w-12 h-12 text-indigo-500 animate-spin" />
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center">
+        <Loader2 className="w-12 h-12 text-indigo-500 animate-spin mb-4" />
+        <p className="text-slate-500 font-bold animate-pulse">Processando métricas...</p>
       </div>
     );
   }
@@ -89,19 +90,19 @@ export default function RelatorioTrimestral() {
         </div>
       </nav>
 
-      <main className="grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full z-10">
+      <main className="grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 w-full z-10">
         
-        {/* Cabeçalho */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+        {/* Cabeçalho Responsivo */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 sm:mb-10">
           <div>
-            <Link href="/dashboard" className="inline-flex items-center text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors mb-4">
+            <Link href="/dashboard" className="inline-flex items-center text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors mb-3 sm:mb-4">
               <ChevronLeft className="w-4 h-4 mr-1" />
               Voltar para Chamada
             </Link>
-            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight mb-2">
+            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight mb-2">
               Resumo do Trimestre
             </h1>
-            <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 font-medium">
+            <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 font-medium text-sm sm:text-base">
               <CalendarDays className="w-4 h-4" />
               <span>{dados.trimestre} de {dados.ano}</span>
             </div>
@@ -109,35 +110,35 @@ export default function RelatorioTrimestral() {
         </div>
 
         {/* KPIs GLOBAIS DINÂMICOS */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-10 sm:mb-12">
           
           {/* Métricas Numéricas (Ex: Visitas) */}
           {Object.entries(dados.kpis_globais.numericos).map(([label, valor]) => (
-            <div key={label} className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-8 rounded-4xl shadow-xl border border-slate-200/50 dark:border-slate-800/50 transition-all hover:-translate-y-1">
-              <div className="flex justify-between items-start mb-4">
-                <div className="p-3 bg-blue-100 dark:bg-blue-900/50 rounded-2xl text-blue-600 dark:text-blue-400">
-                  <Hash className="w-6 h-6" />
+            <div key={label} className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-6 sm:p-8 rounded-3xl sm:rounded-4xl shadow-xl border border-slate-200/50 dark:border-slate-800/50 transition-all hover:-translate-y-1">
+              <div className="flex justify-between items-start mb-3 sm:mb-4">
+                <div className="p-2 sm:p-3 bg-blue-100 dark:bg-blue-900/50 rounded-xl sm:rounded-2xl text-blue-600 dark:text-blue-400">
+                  <Hash className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
               </div>
-              <h3 className="text-slate-500 dark:text-slate-400 font-bold text-sm uppercase tracking-wider mb-1">{label}</h3>
-              <p className="text-5xl font-black text-slate-800 dark:text-white tracking-tighter">{valor}</p>
+              <h3 className="text-slate-500 dark:text-slate-400 font-bold text-xs sm:text-sm uppercase tracking-wider mb-1">{label}</h3>
+              <p className="text-4xl sm:text-5xl font-black text-slate-800 dark:text-white tracking-tighter">{valor}</p>
             </div>
           ))}
 
           {/* Métricas Booleanas (Ex: Lição) */}
           {Object.entries(dados.kpis_globais.booleanos).map(([label, info]) => (
-            <div key={label} className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-8 rounded-4xl shadow-xl border border-slate-200/50 dark:border-slate-800/50 transition-all hover:-translate-y-1">
-              <div className="flex justify-between items-start mb-4">
-                <div className="p-3 bg-emerald-100 dark:bg-emerald-900/50 rounded-2xl text-emerald-600 dark:text-emerald-400">
-                  <BookOpen className="w-6 h-6" />
+            <div key={label} className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-6 sm:p-8 rounded-3xl sm:rounded-4xl shadow-xl border border-slate-200/50 dark:border-slate-800/50 transition-all hover:-translate-y-1">
+              <div className="flex justify-between items-start mb-3 sm:mb-4">
+                <div className="p-2 sm:p-3 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl sm:rounded-2xl text-emerald-600 dark:text-emerald-400">
+                  <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
               </div>
-              <h3 className="text-slate-500 dark:text-slate-400 font-bold text-sm uppercase tracking-wider mb-1">{label} (Média)</h3>
+              <h3 className="text-slate-500 dark:text-slate-400 font-bold text-xs sm:text-sm uppercase tracking-wider mb-1">{label} (Média)</h3>
               <div className="flex items-baseline gap-2">
-                <p className="text-5xl font-black text-slate-800 dark:text-white tracking-tighter">{calcPct(info.sim, info.total)}</p>
-                <span className="text-2xl font-bold text-slate-400">%</span>
+                <p className="text-4xl sm:text-5xl font-black text-slate-800 dark:text-white tracking-tighter">{calcPct(info.sim, info.total)}</p>
+                <span className="text-xl sm:text-2xl font-bold text-slate-400">%</span>
               </div>
-              <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-2 bg-emerald-50 dark:bg-emerald-900/20 inline-block px-3 py-1 rounded-lg">
+              <p className="text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-2 bg-emerald-50 dark:bg-emerald-900/20 inline-block px-2 sm:px-3 py-1 rounded-lg">
                 {info.sim} de {info.total} registros
               </p>
             </div>
@@ -145,38 +146,41 @@ export default function RelatorioTrimestral() {
         </div>
 
         {/* DESEMPENHO POR CLASSE DINÂMICO */}
-        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-slate-200/50 dark:border-slate-800/50 overflow-hidden p-8">
-          <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white tracking-tight mb-8">Performance por Unidade</h2>
+        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl sm:rounded-[2.5rem] shadow-2xl border border-slate-200/50 dark:border-slate-800/50 overflow-hidden p-5 sm:p-8">
+          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-800 dark:text-white tracking-tight mb-6 sm:mb-8">Performance por Unidade</h2>
           
-          <div className="space-y-12">
+          <div className="space-y-8 sm:space-y-12">
             {dados.classes.map((cls) => (
-              <div key={cls.id} className="border-b border-slate-100 dark:border-slate-800/50 pb-12 last:border-0 last:pb-0">
-                <div className="flex justify-between items-end mb-6">
-                  <h4 className="text-xl font-black text-slate-800 dark:text-slate-200">{cls.nome}</h4>
+              <div key={cls.id} className="border-b border-slate-100 dark:border-slate-800/50 pb-8 sm:pb-12 last:border-0 last:pb-0">
+                
+                {/* Cabeçalho da Classe adaptável (Empilha no mobile) */}
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 sm:gap-0 mb-5 sm:mb-6">
+                  <h4 className="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-200">{cls.nome}</h4>
                   
-                  {/* Números rápidos das métricas numéricas da classe */}
-                  <div className="flex gap-3">
+                  {/* Números rápidos - Com flex-wrap para não quebrar a tela */}
+                  <div className="flex flex-wrap gap-2 sm:gap-3">
                     {Object.entries(cls.numericos).map(([label, valor]) => (
-                      <span key={label} className="text-xs font-bold bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                      <span key={label} className="text-[10px] sm:text-xs font-bold bg-slate-100 dark:bg-slate-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                         {label}: <span className="text-blue-600 dark:text-blue-400 ml-1">{valor}</span>
                       </span>
                     ))}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                {/* Barras de Progresso */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-6 sm:gap-y-8">
                   {Object.entries(cls.booleanos).map(([label, info]) => {
                     const pct = calcPct(info.sim, info.total);
                     return (
                       <div key={label}>
-                        <div className="flex justify-between items-center text-sm font-bold mb-3">
+                        <div className="flex justify-between items-center text-xs sm:text-sm font-bold mb-2 sm:mb-3">
                           <span className="text-slate-500 dark:text-slate-400">{label}</span>
                           <div className="text-slate-800 dark:text-slate-100 font-black">
-                            {info.sim} / {info.total}
-                            <span className="text-indigo-500 ml-2 font-semibold">({pct}%)</span>
+                            {info.sim} <span className="text-slate-400 font-medium">/ {info.total}</span>
+                            <span className="text-indigo-500 ml-1 sm:ml-2 font-semibold">({pct}%)</span>
                           </div>
                         </div>
-                        <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3.5 overflow-hidden shadow-inner">
+                        <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 sm:h-3.5 overflow-hidden shadow-inner">
                           <div 
                             className="bg-linear-to-r from-blue-500 via-indigo-500 to-indigo-600 h-full rounded-full transition-all duration-1000 ease-out shadow-lg" 
                             style={{ width: `${pct}%` }}
