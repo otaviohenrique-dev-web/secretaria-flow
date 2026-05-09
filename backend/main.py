@@ -23,6 +23,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/ping")
+def manter_acordado():
+    """Rota pública para o cronjob bater e manter o servidor do Render acordado."""
+    return {"status": "Online e operante!", "projeto": "Secretaria Flow"}
+
+
 @app.get("/api/me")
 def read_users_me(current_user: dict = Depends(get_current_user)):
     return {
@@ -339,11 +345,6 @@ def resetar_trimestre(session: Session = Depends(get_session), current_user: dic
         session.rollback()
         raise HTTPException(status_code=500, detail=f"Erro ao zerar trimestre: {str(e)}")
 # --- FIM ROTA PARA ENCERRAR O TRIMESTRE ---
-
-
-
-
-
 
 
 
