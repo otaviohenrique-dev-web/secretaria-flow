@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Footer from '@/components/Footer';
 import ThemeToggle from '@/components/ThemeToggle';
-import { LayoutDashboard, BookOpen, TrendingUp, ChevronLeft, CalendarDays, Hash, Loader2, AlertTriangle, Users } from 'lucide-react';
+import { LayoutDashboard, BookOpen, TrendingUp, ChevronLeft, CalendarDays, Hash, Loader2, AlertTriangle, Users, Check, Save, X } from 'lucide-react';
 import Link from 'next/link';
 import Cookies from 'js-cookie';
 
@@ -25,11 +25,15 @@ interface RelatorioDados {
 export default function RelatorioTrimestral() {
   const [dados, setDados] = useState<RelatorioDados | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Estados para a Auditoria
+  const [auditoria, setAuditoria] = useState<any[]>([]);
+  const [exibirAuditoria, setExibirAuditoria] = useState(false);
+  const [processandoAuditoria, setProcessandoAuditoria] = useState(false);
 
   useEffect(() => {
     const fetchRelatorio = async () => {
       const token = Cookies.get('auth_token');
-      
       if (!token) {
         window.location.href = "/";
         return;
@@ -73,13 +77,12 @@ export default function RelatorioTrimestral() {
     );
 
     if (confirmacao !== "ZERAR") {
-      alert("Operação cancelada. Os dados foram mantidos de forma segura.");
+      alert("Operação cancelada.");
       return;
     }
 
     setLoading(true);
     const token = Cookies.get('auth_token');
-    
     if (!token) {
       window.location.href = "/";
       return;
@@ -93,12 +96,6 @@ export default function RelatorioTrimestral() {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      if (res.status === 401) {
-        Cookies.remove('auth_token');
-        window.location.href = "/";
-        return;
-      }
-
       if (res.ok) {
         alert("✨ Trimestre encerrado! O sistema está limpo para o próximo ciclo.");
         window.location.reload(); 
@@ -110,6 +107,42 @@ export default function RelatorioTrimestral() {
       alert("❌ Erro de conexão.");
       setLoading(false);
     }
+  };
+
+  // Funções de Auditoria
+  const buscarAuditoria = async () => {
+    const token = Cookies.get('auth_token');
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    try {
+      const res = await fetch(`${apiUrl}/api/relatorios/auditoria`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) setAuditoria(await res.json());
+      setExibirAuditoria(true);
+    } catch (error) { console.error(error); }
+  };
+
+  const executarCorrecao = async () => {
+    if (!window.confirm("Isso registrará a 'Falta' para todos os alunos nas datas listadas. Deseja confirmar?")) return;
+    
+    setProcessandoAuditoria(true);
+    const token = Cookies.get('auth_token');
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+    const payload = auditoria.map(a => ({ aluno_id: a.aluno_id, datas: a.datas_faltantes }));
+
+    try {
+      const res = await fetch(`${apiUrl}/api/relatorios/corrigir-faltas`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        alert("✨ Auditoria finalizada! O relatório agora está 100% preciso.");
+        window.location.reload();
+      }
+    } catch (error) { alert("Erro ao processar."); }
+    finally { setProcessandoAuditoria(false); }
   };
 
   if (loading) {
@@ -151,7 +184,7 @@ export default function RelatorioTrimestral() {
       <main className="grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 w-full z-10">
         
         {/* Cabeçalho */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 sm:mb-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div>
             <Link href="/dashboard" className="inline-flex items-center text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors mb-3 sm:mb-4">
               <ChevronLeft className="w-4 h-4 mr-1" />
@@ -166,15 +199,78 @@ export default function RelatorioTrimestral() {
             </div>
           </div>
 
-          <button 
-            onClick={handleZerarTrimestre}
-            className="flex items-center justify-center gap-2 bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-sm px-6 py-3 rounded-2xl transition-all border border-rose-200 dark:border-rose-500/30 w-full md:w-auto"
-          >
-            <AlertTriangle className="w-4 h-4" />
-            <span className="hidden sm:inline">Encerrar Trimestre</span>
-            <span className="sm:hidden">Zerar Relatórios</span>
-          </button>
+          <div className="flex flex-wrap gap-2 w-full md:w-auto">
+            <button 
+              onClick={buscarAuditoria}
+              className="flex items-center justify-center gap-2 bg-amber-50 dark:bg-amber-500/10 hover:bg-amber-100 dark:hover:bg-amber-900/40 text-amber-600 dark:text-amber-400 font-bold text-sm px-6 py-3 rounded-2xl transition-all border border-amber-200 dark:border-amber-800 grow md:grow-0"
+            >
+              <Check className="w-4 h-4" /> <span className="hidden sm:inline">Auditoria de Presença</span><span className="sm:hidden">Auditoria</span>
+            </button>
+            
+            <button 
+              onClick={handleZerarTrimestre}
+              className="flex items-center justify-center gap-2 bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-sm px-6 py-3 rounded-2xl transition-all border border-rose-200 dark:border-rose-500/30 grow md:grow-0"
+            >
+              <AlertTriangle className="w-4 h-4" />
+              <span className="hidden sm:inline">Encerrar Trimestre</span>
+              <span className="sm:hidden">Zerar Relatórios</span>
+            </button>
+          </div>
         </div>
+
+        {/* MODAL / SEÇÃO DE AUDITORIA DETALHADA */}
+        {exibirAuditoria && (
+          <div className="mb-10 bg-amber-50 dark:bg-amber-900/10 border-2 border-amber-200 dark:border-amber-800/50 rounded-[2.5rem] p-6 sm:p-8 animate-in fade-in zoom-in duration-300 shadow-lg">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h3 className="text-xl sm:text-2xl font-black text-amber-800 dark:text-amber-400">Auditoria: Registros Pendentes</h3>
+                <p className="text-amber-700/70 dark:text-amber-500 text-sm font-medium mt-1">Os alunos abaixo não possuem registro de falta ou presença nas seguintes datas de chamada:</p>
+              </div>
+              <button onClick={() => setExibirAuditoria(false)} className="text-amber-800 dark:text-amber-500 bg-amber-100 dark:bg-amber-900/30 p-2 rounded-xl hover:bg-amber-200 dark:hover:bg-amber-800 transition-colors">
+                <X className="w-5 h-5"/>
+              </button>
+            </div>
+
+            {auditoria.length === 0 ? (
+              <div className="text-center bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl py-8">
+                 <p className="font-bold text-emerald-600 dark:text-emerald-400">✅ Tudo em ordem!</p>
+                 <p className="text-sm text-emerald-600/80 dark:text-emerald-500 mt-1">Nenhum "buraco" no sistema. Todos os alunos possuem registros em todas as datas.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="max-h-80 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+                  {auditoria.map(a => (
+                    <div key={a.aluno_id} className="flex flex-col bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-amber-100 dark:border-slate-800">
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="font-bold text-slate-800 dark:text-slate-200">{a.nome}</span>
+                        <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-3 py-1.5 rounded-lg border border-amber-100 dark:border-amber-800">
+                          {a.datas_faltantes.length} faltas pendentes
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {a.datas_faltantes.map((data: string) => (
+                          <span key={data} className="flex items-center gap-1 text-xs font-bold bg-amber-100/50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-500 px-2.5 py-1.5 rounded-md border border-amber-200 dark:border-amber-800/50">
+                            <CalendarDays className="w-3 h-3" />
+                            {data.split('-').reverse().join('/')}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <button 
+                  onClick={executarCorrecao}
+                  disabled={processandoAuditoria}
+                  className="w-full bg-amber-600 hover:bg-amber-700 text-white font-black py-4 rounded-2xl shadow-lg flex items-center justify-center gap-2 mt-4 transition-colors disabled:opacity-50"
+                >
+                  {processandoAuditoria ? <Loader2 className="animate-spin w-5 h-5" /> : <Save className="w-5 h-5" />}
+                  Confirmar Correção: Registrar Falta para os pendentes acima
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* KPIs GLOBAIS */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-10 sm:mb-12">
@@ -189,7 +285,25 @@ export default function RelatorioTrimestral() {
               <p className="text-4xl font-black text-slate-800 dark:text-white tracking-tighter">{valor}</p>
             </div>
           ))}
-          {/* As métricas booleanas globais são renderizadas aqui normalmente... */}
+          
+          {Object.entries(dados.kpis_globais.booleanos).map(([label, info]) => {
+              if(label.toLowerCase().includes('falta') || label.toLowerCase().includes('faltou')) return null;
+
+              return (
+              <div key={label} className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-6 sm:p-8 rounded-3xl shadow-xl border border-slate-200/50 dark:border-slate-800/50 transition-all hover:-translate-y-1">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="p-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl text-emerald-600 dark:text-emerald-400">
+                    <BookOpen className="w-6 h-6" />
+                  </div>
+                </div>
+                <h3 className="text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-wider mb-1">{label} (Média)</h3>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-4xl font-black text-slate-800 dark:text-white tracking-tighter">{calcPct(info.sim, info.total)}</p>
+                  <span className="text-2xl font-bold text-slate-400">%</span>
+                </div>
+              </div>
+            )
+          })}
         </div>
 
         {/* DESEMPENHO POR CLASSE DINÂMICO */}
@@ -199,14 +313,11 @@ export default function RelatorioTrimestral() {
           <div className="space-y-8 sm:space-y-12">
             {dados.classes.map((cls) => {
               
-              // 1. Identificamos se existe uma métrica de Presença e de Falta
               const presencaKey = Object.keys(cls.booleanos).find(k => k.toLowerCase().includes('presente') || k.toLowerCase().includes('presença'));
               const faltaKey = Object.keys(cls.booleanos).find(k => k.toLowerCase().includes('falta') || k.toLowerCase().includes('faltou'));
 
-              // 2. Filtramos para não exibir "Presente" e "Faltou" na lista genérica abaixo
               const outrasBooleanas = Object.entries(cls.booleanos).filter(([k]) => k !== presencaKey && k !== faltaKey);
 
-              // 3. Calculamos a Frequência unificada
               const presentes = presencaKey ? cls.booleanos[presencaKey].sim : 0;
               const totalChamadas = presencaKey ? cls.booleanos[presencaKey].total : 0;
               const faltas = faltaKey ? cls.booleanos[faltaKey].sim : (totalChamadas > 0 ? totalChamadas - presentes : 0);
@@ -215,7 +326,6 @@ export default function RelatorioTrimestral() {
               return (
                 <div key={cls.id} className="border-b border-slate-100 dark:border-slate-800/50 pb-8 sm:pb-12 last:border-0 last:pb-0">
                   
-                  {/* Cabeçalho da Classe */}
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 sm:gap-0 mb-5 sm:mb-6">
                     <h4 className="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-200">{cls.nome}</h4>
                     <div className="flex flex-wrap gap-2 sm:gap-3">
@@ -227,7 +337,6 @@ export default function RelatorioTrimestral() {
                     </div>
                   </div>
 
-                  {/* NOVO: Widget Exclusivo de Frequência (Unificado) */}
                   {presencaKey && (
                     <div className="mb-8 bg-slate-50 dark:bg-slate-800/50 rounded-3xl p-5 sm:p-6 border border-slate-200 dark:border-slate-700/50 shadow-sm">
                       <div className="flex justify-between items-center mb-4">
@@ -244,7 +353,6 @@ export default function RelatorioTrimestral() {
                         </span>
                       </div>
                       
-                      {/* Barra Única: Verde para presença, Vermelho de fundo para falta */}
                       <div className="w-full bg-rose-100 dark:bg-rose-950/30 rounded-full h-4 sm:h-5 overflow-hidden flex shadow-inner mb-3">
                         <div 
                           className="bg-emerald-500 h-full transition-all duration-1000 ease-out" 
@@ -259,7 +367,6 @@ export default function RelatorioTrimestral() {
                     </div>
                   )}
 
-                  {/* Restante das Métricas (Lição, Pequeno Grupo, etc) */}
                   {outrasBooleanas.length > 0 && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-6 sm:gap-y-8">
                       {outrasBooleanas.map(([label, info]) => {
