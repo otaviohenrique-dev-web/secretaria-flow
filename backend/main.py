@@ -380,7 +380,61 @@ def resetar_trimestre(session: Session = Depends(get_session), current_user: dic
         raise HTTPException(status_code=500, detail=f"Erro ao zerar trimestre: {str(e)}")
 # --- FIM ROTA PARA ENCERRAR O TRIMESTRE ---
 
+# --- ROTAS DE AUDITORIA E AJUSTE DE PRESENÇAS ---
 
+@app.get("/api/relatorios/auditoria")
+def buscar_auditoria(session: Session = Depends(get_session), current_user: dict = Depends(get_current_user)):
+    """Retorna a lista de alunos que possuem datas sem nenhum registro de presença/falta."""
+    from models import Aluno, Resposta, Pergunta
+    from sqlmodel import select, func
+    
+    # 1. Identificamos qual é a pergunta de "Presença"
+    pergunta_presenca = session.exec(select(Pergunta).where(Pergunta.texto.ilike('%presente%'))).first()
+    if not pergunta_presenca:
+        return []
+
+    # 2. Pegamos todas as datas em que houve alguma chamada neste trimestre
+    datas_com_chamada = session.exec(select(Resposta.data_registro).where(Resposta.pergunta_id == pergunta_presenca.id).distinct()).all()
+    
+    alunos = session.exec(select(Aluno)).all()
+    relatorio_auditoria = []
+
+    for aluno in alunos:
+        # Para cada aluno, vemos quais datas ele NÃO tem registro
+        datas_aluno = session.exec(select(Resposta.data_registro).where(Resposta.aluno_id == aluno.id, Resposta.pergunta_id == pergunta_presenca.id)).all()
+        datas_faltantes = [d for d in datas_com_chamada if d not in datas_aluno]
+        
+        if datas_faltantes:
+            relatorio_auditoria.append({
+                "aluno_id": aluno.id,
+                "nome": aluno.nome,
+                "datas_faltantes": [d.strftime('%Y-%m-%d') for d in datas_faltantes]
+            })
+            
+    return relatorio_auditoria
+
+@app.post("/api/relatorios/corrigir-faltas")
+def corrigir_faltas_em_massa(dados: list, session: Session = Depends(get_session), current_user: dict = Depends(get_current_user)):
+    """Recebe uma lista de alunos e datas para marcar como 'Faltou' (False)."""
+    from models import Resposta, Pergunta
+    from datetime import datetime
+    
+    pergunta_presenca = session.exec(select(Pergunta).where(Pergunta.texto.ilike('%presente%'))).first()
+    if not pergunta_presenca:
+        raise HTTPException(status_code=404, detail="Métrica de presença não encontrada.")
+
+    for item in dados:
+        for data_str in item['datas']:
+            nova_falta = Resposta(
+                aluno_id=item['aluno_id'],
+                pergunta_id=pergunta_presenca.id,
+                data_registro=datetime.strptime(data_str, '%Y-%m-%d').date(),
+                valor_booleano=False  # MARCA COMO FALTOU
+            )
+            session.add(nova_falta)
+    
+    session.commit()
+    return {"message": "Auditoria concluída: Faltas registradas com sucesso!"}
 
 
 
