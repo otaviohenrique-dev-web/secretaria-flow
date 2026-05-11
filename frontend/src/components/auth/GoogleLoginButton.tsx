@@ -46,6 +46,7 @@ export default function GoogleLoginButton() {
           console.log('Login falhou no Google');
         }}
         useOneTap={false}
+        type="standard"
       />
     </div>
   );
