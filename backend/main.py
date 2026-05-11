@@ -4,9 +4,7 @@ from sqlmodel import Session, select
 from pydantic import BaseModel
 from datetime import date
 from calendar import monthrange
-from typing import Dict, Union, Any
-
-
+from typing import Dict, Union, Any, List
 
 # Importações do nosso projeto
 from database import get_session
@@ -342,7 +340,6 @@ def deletar_pergunta(pergunta_id: int, session: Session = Depends(get_session), 
 @app.delete("/api/relatorios/resetar")
 def resetar_trimestre(session: Session = Depends(get_session), current_user: dict = Depends(get_current_user)):
     """Apaga TODOS os registros de Respostas para iniciar um novo trimestre, mantendo alunos e classes."""
-    
     try:
         from models import Resposta  # Importação com o nome correto do seu model!
         
@@ -354,24 +351,6 @@ def resetar_trimestre(session: Session = Depends(get_session), current_user: dic
             session.delete(r)
             
         # Salva o banco limpo
-        session.commit()
-        return {"message": "Trimestre encerrado e métricas zeradas com sucesso!"}
-    
-    except Exception as e:
-        session.rollback()
-        raise HTTPException(status_code=500, detail=f"Erro ao zerar trimestre: {str(e)}")
-    """Apaga TODOS os registros de chamadas para iniciar um novo trimestre, mantendo alunos e classes."""
-    
-    try:
-        # ATENÇÃO: Substitua "Chamada" pelo nome exato do seu modelo de banco de dados
-        # que guarda os registros diários (ex: Chamada, Resposta, RegistroPresenca).
-        # Vamos assumir que o modelo se chame `Chamada`.
-        from models import Chamada 
-        
-        chamadas_antigas = session.exec(select(Chamada)).all()
-        for c in chamadas_antigas:
-            session.delete(c)
-            
         session.commit()
         return {"message": "Trimestre encerrado e métricas zeradas com sucesso!"}
     
@@ -414,8 +393,8 @@ def buscar_auditoria(session: Session = Depends(get_session), current_user: dict
     return relatorio_auditoria
 
 @app.post("/api/relatorios/corrigir-faltas")
-def corrigir_faltas_em_massa(dados: list, session: Session = Depends(get_session), current_user: dict = Depends(get_current_user)):
-    """Recebe uma lista de alunos e datas para marcar como 'Faltou' (False)."""
+def corrigir_faltas_em_massa(dados: List[Dict[str, Any]], session: Session = Depends(get_session), current_user: dict = Depends(get_current_user)):
+    """Recebe uma lista de alunos e datas para marcar como 'Faltou' (False) via JSON."""
     from models import Resposta, Pergunta
     from datetime import datetime
     
@@ -435,31 +414,3 @@ def corrigir_faltas_em_massa(dados: list, session: Session = Depends(get_session
     
     session.commit()
     return {"message": "Auditoria concluída: Faltas registradas com sucesso!"}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
