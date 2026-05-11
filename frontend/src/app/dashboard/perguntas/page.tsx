@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { ChevronLeft, Plus, Power, Hash, Check, Loader2 } from 'lucide-react';
+import { ChevronLeft, Plus, Power, Hash, Check, Loader2, Edit2, Trash2, Save, X } from 'lucide-react';
 import Link from 'next/link';
 import Cookies from 'js-cookie';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -12,6 +12,8 @@ export default function GerenciadorPerguntas() {
   const [novoTexto, setNovoTexto] = useState('');
   const [novoTipo, setNovoTipo] = useState<'booleano' | 'numero'>('booleano');
   const [novoEscopo, setNovoEscopo] = useState<'individual' | 'global'>('individual');
+  const [editandoId, setEditandoId] = useState<number | null>(null);
+  
   const [loading, setLoading] = useState(true);
   const [enviando, setEnviando] = useState(false);
 
@@ -39,18 +41,13 @@ export default function GerenciadorPerguntas() {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      // 🚨 Proteção de Token Expirado
       if (res.status === 401) {
         Cookies.remove('auth_token');
         window.location.href = "/";
         return;
       }
 
-      if (res.ok) {
-        setPerguntas(await res.json());
-      } else {
-        console.error("Falha na autorização do Back-end");
-      }
+      if (res.ok) setPerguntas(await res.json());
     } catch (error) {
       console.error("Erro ao carregar métricas:", error);
     } finally {
@@ -58,7 +55,7 @@ export default function GerenciadorPerguntas() {
     }
   };
 
-  const handleCriar = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!novoTexto) return;
     
@@ -66,15 +63,16 @@ export default function GerenciadorPerguntas() {
     if (!token) return;
 
     setEnviando(true);
+    const metodo = editandoId ? 'PUT' : 'POST';
+    const url = editandoId ? `${apiUrl}/api/perguntas/${editandoId}` : `${apiUrl}/api/perguntas`;
 
     try {
-      const res = await fetch(`${apiUrl}/api/perguntas`, {
-        method: 'POST',
+      const res = await fetch(url, {
+        method: metodo,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ texto: novoTexto, tipo: novoTipo, escopo: novoEscopo, ativa: true })
       });
 
-      // 🚨 Proteção de Token Expirado
       if (res.status === 401) {
         Cookies.remove('auth_token');
         window.location.href = "/";
@@ -82,15 +80,55 @@ export default function GerenciadorPerguntas() {
       }
 
       if (res.ok) {
-        setNovoTexto('');
+        handleCancelarEdicao();
         fetchPerguntas(); 
       } else {
-        alert("Erro ao criar a métrica (Acesso Negado).");
+        alert("Erro ao salvar a métrica.");
       }
     } catch (error) {
       alert("Erro de comunicação com o servidor.");
     } finally {
       setEnviando(false);
+    }
+  };
+
+  const handleEditar = (p: Pergunta) => {
+    setEditandoId(p.id);
+    setNovoTexto(p.texto);
+    setNovoTipo(p.tipo);
+    setNovoEscopo(p.escopo);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancelarEdicao = () => {
+    setEditandoId(null);
+    setNovoTexto('');
+    setNovoTipo('booleano');
+    setNovoEscopo('individual');
+  };
+
+  const handleDeletar = async (id: number) => {
+    if (!window.confirm("CUIDADO! Excluir esta métrica apagará permanentemente as respostas ligadas a ela nos relatórios. Continuar?")) return;
+    
+    const token = getToken();
+    if (!token) return;
+
+    try {
+      const res = await fetch(`${apiUrl}/api/perguntas/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.status === 401) {
+        Cookies.remove('auth_token');
+        window.location.href = "/";
+        return;
+      }
+
+      if (res.ok) fetchPerguntas();
+      else alert("Erro ao excluir. Verifique se há permissões.");
+    } catch (error) {
+      alert("Erro de comunicação com o servidor.");
     }
   };
 
@@ -104,16 +142,13 @@ export default function GerenciadorPerguntas() {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      // 🚨 Proteção de Token Expirado
       if (res.status === 401) {
         Cookies.remove('auth_token');
         window.location.href = "/";
         return;
       }
 
-      if (res.ok) {
-        fetchPerguntas(); 
-      }
+      if (res.ok) fetchPerguntas(); 
     } catch (error) {
       console.error("Erro ao alterar status:", error);
     }
@@ -133,10 +168,10 @@ export default function GerenciadorPerguntas() {
       <main className="grow max-w-4xl mx-auto px-4 py-12 w-full">
         <div className="mb-10">
           <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">Gerenciar Métricas</h1>
-          <p className="text-slate-500 mt-2 font-medium">Defina quais dados a secretaria deve colher a cada sábado.</p>
+          <p className="text-slate-500 mt-2 font-medium">Adicione, edite, exclua ou desative as métricas da chamada.</p>
         </div>
 
-        <form onSubmit={handleCriar} className="bg-white dark:bg-slate-900 p-6 rounded-4xl shadow-xl border border-slate-200 dark:border-slate-800 mb-10 flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 p-6 rounded-4xl shadow-xl border border-slate-200 dark:border-slate-800 mb-10 flex flex-col gap-4">
           <div className="w-full">
             <input 
               type="text" 
@@ -165,14 +200,26 @@ export default function GerenciadorPerguntas() {
               <option value="global">Global (Para a Classe inteira)</option>
             </select>
             
-            <button 
-              type="submit" 
-              disabled={enviando}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 py-3 rounded-2xl shadow-lg shadow-indigo-500/30 transition-all flex items-center justify-center gap-2"
-            >
-              {enviando ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
-              Adicionar
-            </button>
+            <div className="flex gap-2 w-full md:w-auto">
+              <button 
+                type="submit" 
+                disabled={enviando || !novoTexto}
+                className={`grow md:flex-none flex items-center justify-center gap-2 font-bold px-8 py-3 rounded-2xl text-white transition-all shadow-lg ${editandoId ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/30' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/30'} disabled:opacity-50`}
+              >
+                {enviando ? <Loader2 className="w-5 h-5 animate-spin" /> : (editandoId ? <Save className="w-5 h-5" /> : <Plus className="w-5 h-5" />)}
+                {editandoId ? 'Salvar' : 'Adicionar'}
+              </button>
+
+              {editandoId && (
+                <button 
+                  type="button" 
+                  onClick={handleCancelarEdicao}
+                  className="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 p-3 rounded-2xl transition-all"
+                >
+                  <X className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                </button>
+              )}
+            </div>
           </div>
         </form>
 
@@ -181,7 +228,7 @@ export default function GerenciadorPerguntas() {
             <div className="text-center py-10"><Loader2 className="w-10 h-10 animate-spin mx-auto text-indigo-500" /></div>
           ) : (
             perguntas.map((p) => (
-              <div key={p.id} className={`flex items-center justify-between p-5 rounded-3xl border transition-all ${p.ativa ? 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm' : 'bg-slate-100 dark:bg-slate-950 border-transparent opacity-60'}`}>
+              <div key={p.id} className={`flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-3xl border transition-all ${p.ativa ? 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm' : 'bg-slate-100 dark:bg-slate-950 border-transparent opacity-60'}`}>
                 <div className="flex items-center gap-4">
                   <div className={`p-3 rounded-xl ${p.tipo === 'booleano' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}`}>
                     {p.tipo === 'booleano' ? <Check className="w-5 h-5" /> : <Hash className="w-5 h-5" />}
@@ -194,13 +241,24 @@ export default function GerenciadorPerguntas() {
                   </div>
                 </div>
                 
-                <button 
-                  onClick={() => toggleStatus(p.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs transition-all ${p.ativa ? 'bg-rose-50 text-rose-600 hover:bg-rose-100' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}
-                >
-                  <Power className="w-4 h-4" />
-                  {p.ativa ? 'Desativar' : 'Reativar'}
-                </button>
+                <div className="flex items-center gap-2 self-end md:self-auto">
+                  <button onClick={() => handleEditar(p)} className="p-2.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl transition-all" title="Editar métrica">
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => handleDeletar(p.id)} className="p-2.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all" title="Excluir permanentemente">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                  
+                  <div className="w-px h-6 bg-slate-200 dark:bg-slate-800 mx-1"></div>
+
+                  <button 
+                    onClick={() => toggleStatus(p.id)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs transition-all ${p.ativa ? 'bg-amber-50 text-amber-600 hover:bg-amber-100' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}
+                  >
+                    <Power className="w-4 h-4" />
+                    {p.ativa ? 'Desativar' : 'Reativar'}
+                  </button>
+                </div>
               </div>
             ))
           )}

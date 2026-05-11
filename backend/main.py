@@ -302,7 +302,41 @@ def deletar_classe(classe_id: int, session: Session = Depends(get_session), curr
     return {"message": "Classe deletada"}
 # --- FIM ROTAS DE CRUD DE CLASSES ---
 
+# --- ROTAS DE EDIÇÃO E EXCLUSÃO DE MÉTRICAS (PERGUNTAS) ---
 
+@app.put("/api/perguntas/{pergunta_id}")
+def atualizar_pergunta(pergunta_id: int, dados: Pergunta, session: Session = Depends(get_session), current_user: dict = Depends(get_current_user)):
+    """Atualiza o texto, tipo ou escopo de uma métrica."""
+    pergunta_db = session.get(Pergunta, pergunta_id)
+    if not pergunta_db:
+        raise HTTPException(status_code=404, detail="Métrica não encontrada")
+    
+    pergunta_db.texto = dados.texto
+    pergunta_db.tipo = dados.tipo
+    pergunta_db.escopo = dados.escopo
+    
+    session.add(pergunta_db)
+    session.commit()
+    session.refresh(pergunta_db)
+    return pergunta_db
+
+@app.delete("/api/perguntas/{pergunta_id}")
+def deletar_pergunta(pergunta_id: int, session: Session = Depends(get_session), current_user: dict = Depends(get_current_user)):
+    """Deleta uma métrica e todas as respostas atreladas a ela."""
+    pergunta_db = session.get(Pergunta, pergunta_id)
+    if not pergunta_db:
+        raise HTTPException(status_code=404, detail="Métrica não encontrada")
+    
+    # IMPORTANTE: Limpar respostas antigas ligadas a esta métrica para não dar erro de banco de dados
+    from models import Resposta
+    from sqlmodel import select
+    respostas_vinculadas = session.exec(select(Resposta).where(Resposta.pergunta_id == pergunta_id)).all()
+    for r in respostas_vinculadas:
+        session.delete(r)
+        
+    session.delete(pergunta_db)
+    session.commit()
+    return {"message": "Métrica e registros atrelados removidos com sucesso."}
 
 # --- ROTA PARA ENCERRAR O TRIMESTRE ---
 @app.delete("/api/relatorios/resetar")
