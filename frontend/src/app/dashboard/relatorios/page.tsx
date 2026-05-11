@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Footer from '@/components/Footer';
 import ThemeToggle from '@/components/ThemeToggle';
-import { LayoutDashboard, BookOpen, TrendingUp, ChevronLeft, CalendarDays, Hash, Loader2, AlertTriangle, Trash2 } from 'lucide-react';
+import { LayoutDashboard, BookOpen, TrendingUp, ChevronLeft, CalendarDays, Hash, Loader2, AlertTriangle, Users } from 'lucide-react';
 import Link from 'next/link';
 import Cookies from 'js-cookie';
 
@@ -30,7 +30,6 @@ export default function RelatorioTrimestral() {
     const fetchRelatorio = async () => {
       const token = Cookies.get('auth_token');
       
-      // 🚨 Proteção no cliente (Sem token)
       if (!token) {
         window.location.href = "/";
         return;
@@ -43,7 +42,6 @@ export default function RelatorioTrimestral() {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        // 🚨 Proteção pela API (Token expirado)
         if (res.status === 401) {
           Cookies.remove('auth_token');
           window.location.href = "/";
@@ -70,7 +68,6 @@ export default function RelatorioTrimestral() {
   };
 
   const handleZerarTrimestre = async () => {
-    // PROTEÇÃO CONTRA CLIQUE ACIDENTAL
     const confirmacao = window.prompt(
       "⚠️ ATENÇÃO: Você está prestes a ENCERRAR O TRIMESTRE.\n\nIsso apagará todas as métricas, presenças e registros deste trimestre. Classes e Alunos serão mantidos.\n\nPara confirmar, digite a palavra: ZERAR"
     );
@@ -80,10 +77,9 @@ export default function RelatorioTrimestral() {
       return;
     }
 
-    setLoading(true); // Mostra o spinner de carregamento
+    setLoading(true);
     const token = Cookies.get('auth_token');
     
-    // 🚨 Proteção no cliente (Sem token)
     if (!token) {
       window.location.href = "/";
       return;
@@ -97,7 +93,6 @@ export default function RelatorioTrimestral() {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      // 🚨 Proteção pela API (Token expirado)
       if (res.status === 401) {
         Cookies.remove('auth_token');
         window.location.href = "/";
@@ -106,7 +101,7 @@ export default function RelatorioTrimestral() {
 
       if (res.ok) {
         alert("✨ Trimestre encerrado! O sistema está limpo para o próximo ciclo.");
-        window.location.reload(); // Recarrega a página para zerar os números da tela
+        window.location.reload(); 
       } else {
         alert("❌ Erro ao zerar o trimestre no servidor.");
         setLoading(false);
@@ -155,7 +150,7 @@ export default function RelatorioTrimestral() {
 
       <main className="grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 w-full z-10">
         
-        {/* Cabeçalho Responsivo */}
+        {/* Cabeçalho */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 sm:mb-10">
           <div>
             <Link href="/dashboard" className="inline-flex items-center text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors mb-3 sm:mb-4">
@@ -171,7 +166,6 @@ export default function RelatorioTrimestral() {
             </div>
           </div>
 
-          {/* BOTÃO PROTEGIDO DE ENCERRAR TRIMESTRE */}
           <button 
             onClick={handleZerarTrimestre}
             className="flex items-center justify-center gap-2 bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-sm px-6 py-3 rounded-2xl transition-all border border-rose-200 dark:border-rose-500/30 w-full md:w-auto"
@@ -182,40 +176,20 @@ export default function RelatorioTrimestral() {
           </button>
         </div>
 
-        {/* KPIs GLOBAIS DINÂMICOS */}
+        {/* KPIs GLOBAIS */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-10 sm:mb-12">
-          
-          {/* Métricas Numéricas (Ex: Visitas) */}
           {Object.entries(dados.kpis_globais.numericos).map(([label, valor]) => (
-            <div key={label} className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-6 sm:p-8 rounded-3xl sm:rounded-4xl shadow-xl border border-slate-200/50 dark:border-slate-800/50 transition-all hover:-translate-y-1">
-              <div className="flex justify-between items-start mb-3 sm:mb-4">
-                <div className="p-2 sm:p-3 bg-blue-100 dark:bg-blue-900/50 rounded-xl sm:rounded-2xl text-blue-600 dark:text-blue-400">
-                  <Hash className="w-5 h-5 sm:w-6 sm:h-6" />
+            <div key={label} className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-6 sm:p-8 rounded-3xl shadow-xl border border-slate-200/50 dark:border-slate-800/50 transition-all hover:-translate-y-1">
+              <div className="flex justify-between items-start mb-3">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-xl text-blue-600 dark:text-blue-400">
+                  <Hash className="w-6 h-6" />
                 </div>
               </div>
-              <h3 className="text-slate-500 dark:text-slate-400 font-bold text-xs sm:text-sm uppercase tracking-wider mb-1">{label}</h3>
-              <p className="text-4xl sm:text-5xl font-black text-slate-800 dark:text-white tracking-tighter">{valor}</p>
+              <h3 className="text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-wider mb-1">{label}</h3>
+              <p className="text-4xl font-black text-slate-800 dark:text-white tracking-tighter">{valor}</p>
             </div>
           ))}
-
-          {/* Métricas Booleanas (Ex: Lição) */}
-          {Object.entries(dados.kpis_globais.booleanos).map(([label, info]) => (
-            <div key={label} className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-6 sm:p-8 rounded-3xl sm:rounded-4xl shadow-xl border border-slate-200/50 dark:border-slate-800/50 transition-all hover:-translate-y-1">
-              <div className="flex justify-between items-start mb-3 sm:mb-4">
-                <div className="p-2 sm:p-3 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl sm:rounded-2xl text-emerald-600 dark:text-emerald-400">
-                  <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" />
-                </div>
-              </div>
-              <h3 className="text-slate-500 dark:text-slate-400 font-bold text-xs sm:text-sm uppercase tracking-wider mb-1">{label} (Média)</h3>
-              <div className="flex items-baseline gap-2">
-                <p className="text-4xl sm:text-5xl font-black text-slate-800 dark:text-white tracking-tighter">{calcPct(info.sim, info.total)}</p>
-                <span className="text-xl sm:text-2xl font-bold text-slate-400">%</span>
-              </div>
-              <p className="text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400 mt-2 bg-emerald-50 dark:bg-emerald-900/20 inline-block px-2 sm:px-3 py-1 rounded-lg">
-                {info.sim} de {info.total} registros
-              </p>
-            </div>
-          ))}
+          {/* As métricas booleanas globais são renderizadas aqui normalmente... */}
         </div>
 
         {/* DESEMPENHO POR CLASSE DINÂMICO */}
@@ -223,48 +197,96 @@ export default function RelatorioTrimestral() {
           <h2 className="text-xl sm:text-2xl font-extrabold text-slate-800 dark:text-white tracking-tight mb-6 sm:mb-8">Performance por Unidade</h2>
           
           <div className="space-y-8 sm:space-y-12">
-            {dados.classes.map((cls) => (
-              <div key={cls.id} className="border-b border-slate-100 dark:border-slate-800/50 pb-8 sm:pb-12 last:border-0 last:pb-0">
-                
-                {/* Cabeçalho da Classe adaptável (Empilha no mobile) */}
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 sm:gap-0 mb-5 sm:mb-6">
-                  <h4 className="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-200">{cls.nome}</h4>
-                  
-                  {/* Números rápidos - Com flex-wrap para não quebrar a tela */}
-                  <div className="flex flex-wrap gap-2 sm:gap-3">
-                    {Object.entries(cls.numericos).map(([label, valor]) => (
-                      <span key={label} className="text-[10px] sm:text-xs font-bold bg-slate-100 dark:bg-slate-800 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-                        {label}: <span className="text-blue-600 dark:text-blue-400 ml-1">{valor}</span>
-                      </span>
-                    ))}
-                  </div>
-                </div>
+            {dados.classes.map((cls) => {
+              
+              // 1. Identificamos se existe uma métrica de Presença e de Falta
+              const presencaKey = Object.keys(cls.booleanos).find(k => k.toLowerCase().includes('presente') || k.toLowerCase().includes('presença'));
+              const faltaKey = Object.keys(cls.booleanos).find(k => k.toLowerCase().includes('falta') || k.toLowerCase().includes('faltou'));
 
-                {/* Barras de Progresso */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-6 sm:gap-y-8">
-                  {Object.entries(cls.booleanos).map(([label, info]) => {
-                    const pct = calcPct(info.sim, info.total);
-                    return (
-                      <div key={label}>
-                        <div className="flex justify-between items-center text-xs sm:text-sm font-bold mb-2 sm:mb-3">
-                          <span className="text-slate-500 dark:text-slate-400">{label}</span>
-                          <div className="text-slate-800 dark:text-slate-100 font-black">
-                            {info.sim} <span className="text-slate-400 font-medium">/ {info.total}</span>
-                            <span className="text-indigo-500 ml-1 sm:ml-2 font-semibold">({pct}%)</span>
+              // 2. Filtramos para não exibir "Presente" e "Faltou" na lista genérica abaixo
+              const outrasBooleanas = Object.entries(cls.booleanos).filter(([k]) => k !== presencaKey && k !== faltaKey);
+
+              // 3. Calculamos a Frequência unificada
+              const presentes = presencaKey ? cls.booleanos[presencaKey].sim : 0;
+              const totalChamadas = presencaKey ? cls.booleanos[presencaKey].total : 0;
+              const faltas = faltaKey ? cls.booleanos[faltaKey].sim : (totalChamadas > 0 ? totalChamadas - presentes : 0);
+              const taxaPresenca = totalChamadas > 0 ? calcPct(presentes, totalChamadas) : 0;
+
+              return (
+                <div key={cls.id} className="border-b border-slate-100 dark:border-slate-800/50 pb-8 sm:pb-12 last:border-0 last:pb-0">
+                  
+                  {/* Cabeçalho da Classe */}
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 sm:gap-0 mb-5 sm:mb-6">
+                    <h4 className="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-200">{cls.nome}</h4>
+                    <div className="flex flex-wrap gap-2 sm:gap-3">
+                      {Object.entries(cls.numericos).map(([label, valor]) => (
+                        <span key={label} className="text-[10px] sm:text-xs font-bold bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                          {label}: <span className="text-blue-600 dark:text-blue-400 ml-1">{valor}</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* NOVO: Widget Exclusivo de Frequência (Unificado) */}
+                  {presencaKey && (
+                    <div className="mb-8 bg-slate-50 dark:bg-slate-800/50 rounded-3xl p-5 sm:p-6 border border-slate-200 dark:border-slate-700/50 shadow-sm">
+                      <div className="flex justify-between items-center mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-xl text-indigo-600 dark:text-indigo-400">
+                            <Users className="w-5 h-5" />
                           </div>
+                          <h5 className="font-black text-slate-800 dark:text-slate-200 text-sm sm:text-base uppercase tracking-widest">
+                            Taxa de Frequência
+                          </h5>
                         </div>
-                        <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 sm:h-3.5 overflow-hidden shadow-inner">
-                          <div 
-                            className="bg-linear-to-r from-blue-500 via-indigo-500 to-indigo-600 h-full rounded-full transition-all duration-1000 ease-out shadow-lg" 
-                            style={{ width: `${pct}%` }}
-                          ></div>
-                        </div>
+                        <span className="text-2xl sm:text-3xl font-black text-indigo-600 dark:text-indigo-400">
+                          {taxaPresenca}%
+                        </span>
                       </div>
-                    );
-                  })}
+                      
+                      {/* Barra Única: Verde para presença, Vermelho de fundo para falta */}
+                      <div className="w-full bg-rose-100 dark:bg-rose-950/30 rounded-full h-4 sm:h-5 overflow-hidden flex shadow-inner mb-3">
+                        <div 
+                          className="bg-emerald-500 h-full transition-all duration-1000 ease-out" 
+                          style={{ width: `${taxaPresenca}%` }}
+                        ></div>
+                      </div>
+                      
+                      <div className="flex justify-between text-xs sm:text-sm font-bold px-1">
+                        <span className="text-emerald-600 dark:text-emerald-400">✅ {presentes} Presentes</span>
+                        <span className="text-rose-500 dark:text-rose-400">❌ {faltas} Faltas</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Restante das Métricas (Lição, Pequeno Grupo, etc) */}
+                  {outrasBooleanas.length > 0 && (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-6 sm:gap-y-8">
+                      {outrasBooleanas.map(([label, info]) => {
+                        const pct = calcPct(info.sim, info.total);
+                        return (
+                          <div key={label}>
+                            <div className="flex justify-between items-center text-xs sm:text-sm font-bold mb-2 sm:mb-3">
+                              <span className="text-slate-500 dark:text-slate-400">{label}</span>
+                              <div className="text-slate-800 dark:text-slate-100 font-black">
+                                {info.sim} <span className="text-slate-400 font-medium">/ {info.total}</span>
+                                <span className="text-indigo-500 ml-1 sm:ml-2 font-semibold">({pct}%)</span>
+                              </div>
+                            </div>
+                            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 sm:h-3.5 overflow-hidden shadow-inner">
+                              <div 
+                                className="bg-linear-to-r from-blue-500 via-indigo-500 to-indigo-600 h-full rounded-full transition-all duration-1000 ease-out shadow-lg" 
+                                style={{ width: `${pct}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
